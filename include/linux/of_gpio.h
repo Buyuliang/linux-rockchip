@@ -17,6 +17,9 @@
 
 struct device_node;
 
+extern int of_get_named_gpio_flags(struct device_node *np, const char *list_name,
+                            int index, unsigned long *flags);
+
 #ifdef CONFIG_OF_GPIO
 
 extern int of_get_named_gpio(const struct device_node *np,
