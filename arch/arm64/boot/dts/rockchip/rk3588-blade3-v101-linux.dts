@@ -37,6 +37,13 @@
 			reg = <0x0 (256 * 0x100000) 0x0 (256 * 0x100000)>;
 			linux,cma-default;
 		};
+
+		/* Reserve 32MB memory for MIOP endpoint DMA */
+		miop_dma: miop_dma@0x0e000000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x0 0x0e000000 0x0 0x02000000>;
+		};
 	};
 
 	hdmiin-sound {
@@ -975,14 +982,19 @@
 };
 
 &pcie30phy {
-rockchip,pcie30-phymode = <PHY_MODE_PCIE_AGGREGATION>; /* P1:PCIe3x2  +  P0:PCIe3x2 */
-status = "okay";
+	rockchip,pcie30-phymode = <PHY_MODE_PCIE_AGGREGATION>;
+	status = "okay";
 };
 
 &pcie3x4 {
-    reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
+	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
     vpcie3v3-supply = <&vcc3v3_pcie30>;
-    status = "okay";
+	memory-region = <&miop_dma>;
+};
+
+&pcie3x2 {
+	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
+	vpcie3v3-supply = <&vcc3v3_pcie30>;
 };
 
 &pinctrl {

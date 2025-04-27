@@ -58,6 +58,13 @@ config NET_REDIRECT
 config SKB_EXTENSIONS
 	bool
 
+config SKB_DMA_FRAG
+	bool "SKB data DMA support" if EXPERT
+	default y
+	help
+		This option enables build_skb_dma() function, makes it possible to
+		handle skb->data alloced by dma_alloc_attrs().
+
 menu "Networking options"
 
 source "net/packet/Kconfig"

@@ -1058,6 +1058,11 @@ struct sk_buff {
 	/* only useable after checking ->active_extensions != 0 */
 	struct skb_ext		*extensions;
 #endif
+
+#ifdef CONFIG_SKB_DMA_FRAG
+	void (*dma_free)(struct sk_buff *skb);
+	void *			dma_context;
+#endif
 };
 
 /* if you move pkt_type around you also must adapt those constants */
@@ -1255,6 +1260,11 @@ bool skb_try_coalesce(struct sk_buff *to, struct sk_buff *from,
 
 struct sk_buff *__alloc_skb(unsigned int size, gfp_t priority, int flags,
 			    int node);
+#ifdef CONFIG_SKB_DMA_FRAG
+struct sk_buff *build_skb_for_dma(void *data, unsigned int size,
+                             void (*dma_free)(struct sk_buff *skb),
+                             void *dma_context);
+#endif
 struct sk_buff *__build_skb(void *data, unsigned int frag_size);
 struct sk_buff *build_skb(void *data, unsigned int frag_size);
 struct sk_buff *build_skb_around(struct sk_buff *skb,

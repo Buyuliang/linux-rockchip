@@ -1280,6 +1280,9 @@ retry_regulator:
 	if (device_property_read_bool(dev, "rockchip,skip-scan-in-resume"))
 		rk_pcie->skip_scan_in_resume = true;
 
+	/* app_sris_mode */
+        rk_pcie_writel_apb(rk_pcie, 0x0, (0x1 << 11) | (0x1 << 27));
+
 	rk_pcie->hot_rst_wq = create_singlethread_workqueue("rk_pcie_hot_rst_wq");
 	if (!rk_pcie->hot_rst_wq) {
 		dev_err(dev, "failed to create hot_rst workqueue\n");

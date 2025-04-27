@@ -140,6 +140,26 @@ static int rockchip_p3phy_rk3588_init(struct rockchip_p3phy_priv *priv)
 	u32 reg = 0;
 	int ret;
 
+	/* Enable SRIS mode */
+	/* phy0 lane0 sris_mode_en*/
+	regmap_write(priv->phy_grf, 0x1004, (0x1 << 6) | (0x1 << 22));
+	/* phy0 lane1 sris_mode_en*/
+	regmap_write(priv->phy_grf, 0x1104, (0x1 << 6) | (0x1 << 22));
+	/* phy1 lane0 sris_mode_en*/
+	regmap_write(priv->phy_grf, 0x2004, (0x1 << 6) | (0x1 << 22));
+	/* phy1 lane1 sris_mode_en*/
+	regmap_write(priv->phy_grf, 0x2104, (0x1 << 6) | (0x1 << 22));
+
+	/* Disable reference clock */
+	/* phy0_rx0_cmn_refclk_mod */
+	regmap_write(priv->phy_grf, 0x1004, (0x0) | (0x1 << 23));
+	/* phy0_rx1_cmn_refclk_mod */
+	regmap_write(priv->phy_grf, 0x1104, (0x0) | (0x1 << 23));
+	/* phy1_rx0_cmn_refclk_mod */
+	regmap_write(priv->phy_grf, 0x2004, (0x0) | (0x1 << 23));
+	/* phy1_rx1_cmn_refclk_mod */
+	regmap_write(priv->phy_grf, 0x2104, (0x0) | (0x1 << 23));
+
 	/* Deassert PCIe PMA output clamp mode */
 	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_CMN_CON0, BIT(8) | BIT(24));
 

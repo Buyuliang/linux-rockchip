@@ -287,6 +287,9 @@ static void __build_skb_around(struct sk_buff *skb, void *data,
 	skb_set_end_offset(skb, size);
 	skb->mac_header = (typeof(skb->mac_header))~0U;
 	skb->transport_header = (typeof(skb->transport_header))~0U;
+#ifdef CONFIG_SKB_DMA_FRAG
+	skb->dma_free = NULL;
+#endif
 	skb->alloc_cpu = raw_smp_processor_id();
 	/* make sure we initialize shinfo sequentially */
 	shinfo = skb_shinfo(skb);
@@ -346,6 +349,29 @@ struct sk_buff *build_skb(void *data, unsigned int frag_size)
 	return skb;
 }
 EXPORT_SYMBOL(build_skb);
+
+#ifdef CONFIG_SKB_DMA_FRAG
+/**
+ * build_skb_for_dma - build a network buffer in device DMA memory space
+ * @data: data buffer provided by caller
+ * @size: size of data
+ * @dma_free: callback function for free data
+ * @dma_context: context for dma_free() callback
+ */
+struct sk_buff *build_skb_for_dma(void *data, unsigned int size,
+			      void (*dma_free)(struct sk_buff *skb),
+			      void *dma_context)
+{
+	struct sk_buff *skb = __build_skb(data, size);
+
+	if (skb) {
+		skb->dma_free = dma_free;
+		skb->dma_context = dma_context;
+	}
+	return skb;
+}
+EXPORT_SYMBOL(build_skb_for_dma);
+#endif
 
 /**
  * build_skb_around - build a network buffer around provided skb
@@ -758,7 +784,12 @@ static void skb_free_head(struct sk_buff *skb)
 		if (skb_pp_recycle(skb, head))
 			return;
 		skb_free_frag(head);
-	} else {
+	}
+#ifdef CONFIG_SKB_DMA_FRAG
+	else if (skb->dma_free)
+		skb->dma_free(skb);
+#endif
+	else {
 		kfree(head);
 	}
 }
@@ -1195,6 +1226,10 @@ static struct sk_buff *__skb_clone(struct sk_buff *n, struct sk_buff *skb)
 	C(head_frag);
 	C(data);
 	C(truesize);
+#ifdef CONFIG_SKB_DMA_FRAG
+	C(dma_free);
+	C(dma_context);
+#endif
 	refcount_set(&n->users, 1);
 
 	atomic_inc(&(skb_shinfo(skb)->dataref));
